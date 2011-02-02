@@ -1,4 +1,4 @@
-RSpec::Matchers.define :validate_presence_of do |attribute|
+Spec::Matchers.define :validate_presence_of do |attribute|
   match do |object|
     if !object.respond_to?("#{attribute}=")
       false
@@ -9,7 +9,7 @@ RSpec::Matchers.define :validate_presence_of do |attribute|
   end
 end
 
-RSpec::Matchers.define :validate_length_of do |attribute, options|
+Spec::Matchers.define :validate_length_of do |attribute, options|
   if options.has_key? :within
     min = options[:within].first
     max = options[:within].last
@@ -23,34 +23,37 @@ RSpec::Matchers.define :validate_length_of do |attribute, options|
   end
 
   invalid = false
-  if !min.nil? && min >= 1
-    object.send("#{attribute}=", 'a' * (min - 1))
-    invalid = !object.valid? && object.errors[attribute].any?
-  end
 
-  if !max.nil?
-    object.send("#{attribute}=", 'a' * (max + 1))
-    invalid ||= !object.valid? && object.errors[attribute].any?
+  match do |object|
+    if !min.nil? && min >= 1
+      object.send("#{attribute}=", 'a' * (min - 1))
+      invalid = !object.valid? && object.errors[attribute].any?
+    end
+
+    if !max.nil?
+      object.send("#{attribute}=", 'a' * (max + 1))
+      invalid ||= !object.valid? && object.errors[attribute].any?
+    end
   end
 
   invalid
 end
 
-RSpec::Matchers.define :validate_uniqueness_of do |attribute|
+Spec::Matchers.define :validate_uniqueness_of do |attribute|
   match do |object|
     object.class.stub!(:with_exclusive_scope).and_return([object])
     !object.valid? && object.errors[attribute].any?
   end
 end
 
-RSpec::Matchers.define :validate_confirmation_of do |attribute|
+Spec::Matchers.define :validate_confirmation_of do |attribute|
   match do |object|
     object.send("#{attribute}_confirmation=", 'asdf')
     !object.valid? && object.errors[attribute].any?
   end
 end
 
-RSpec::Matchers.define :validate_inclusion_of do |attribute, options|
+Spec::Matchers.define :validate_inclusion_of do |attribute, options|
   match do |object|
     values = options[:in]
     booleans = assign_and_validate_values(object, attribute, values)
@@ -58,7 +61,7 @@ RSpec::Matchers.define :validate_inclusion_of do |attribute, options|
   end
 end
 
-module RSpec
+module Spec
   module Matchers
 
   private
